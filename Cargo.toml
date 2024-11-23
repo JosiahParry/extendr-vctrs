@@ -1,0 +1,15 @@
+[workspace]
+members = ["extendr-vctrs-macros", "extendr-vctrs-traits"]
+
+[workspace.dependencies]
+extendr-api = { version = ">= 0.7.1", features = ["either"] }
+
+[package]
+name = "extendr-vctrs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+extendr-api = { workspace = true }
+extendr-vctrs-traits = { path = "extendr-vctrs-traits" }
+extendr-vctrs-macros = { path = "extendr-vctrs-macros" }

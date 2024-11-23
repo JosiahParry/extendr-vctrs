@@ -1,0 +1,14 @@
+[package]
+name = "extendr-vctrs-macros"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "1.0.37"
+syn = "2.0.89"
+extendr-vctrs-traits = { path = "../extendr-vctrs-traits" }
+proc-macro2 = "1.0.92"
+extendr-api = { workspace = true }
