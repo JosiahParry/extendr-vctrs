@@ -18,7 +18,7 @@ pub fn extendr_vctr(attr: TokenStream, item: TokenStream) -> TokenStream {
     // Generate the necessary code for functions and TryFrom
     let expanded = quote! {
         // Ensure struct is in scope
-        pub struct #struct_name(pub Vec<Option<usize>>);
+        #input
 
         // Methods for show, length, etc.
         // ///@export #fmt_method
