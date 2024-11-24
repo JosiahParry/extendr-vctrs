@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, DeriveInput};
+use syn::{parse_macro_input, Data, DeriveInput, Fields};
 
 #[proc_macro_attribute]
 pub fn extendr_vctr(attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -29,7 +29,7 @@ pub fn extendr_vctr(attr: TokenStream, item: TokenStream) -> TokenStream {
     let expanded = quote! {
         #input // Preserve the original struct
 
-        pub mod #module_name {
+        pub(crate) mod #module_name {
             use super::*;
             use extendr_api::prelude::*;
 
@@ -97,13 +97,104 @@ pub fn extendr_vctr(attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
             }
 
-
             extendr_module! {
                 mod #module_name;
                 fn #show_fn_name;
                 fn #length_fn_name;
                 fn #subset_fn_name;
                 fn #extend_fn_name;
+            }
+        }
+    };
+
+    TokenStream::from(expanded)
+}
+
+#[proc_macro_derive(Rvctr)]
+pub fn derive_rvctr(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+
+    let struct_name = &input.ident;
+
+    // Ensure it's a tuple struct with a single unnamed field
+    match &input.data {
+        Data::Struct(data) => {
+            if let Fields::Unnamed(fields) = &data.fields {
+                if fields.unnamed.len() == 1 {
+                    &fields.unnamed[0].ty
+                } else {
+                    return syn::Error::new_spanned(
+                        &data.fields,
+                        "Rvctr can only be derived for tuple structs with one unnamed field.",
+                    )
+                    .to_compile_error()
+                    .into();
+                }
+            } else {
+                return syn::Error::new_spanned(
+                    &data.fields,
+                    "Rvctr can only be derived for tuple structs.",
+                )
+                .to_compile_error()
+                .into();
+            }
+        }
+        _ => {
+            return syn::Error::new_spanned(&input, "Rvctr can only be derived for structs.")
+                .to_compile_error()
+                .into();
+        }
+    };
+
+    // Generate implementation
+    let expanded = quote! {
+        impl Rvctr for #struct_name {
+            fn length(&self) -> Rint {
+                extendr_vctrs::helpers::vctr_len(&self.0)
+            }
+
+            fn show(&self) -> Strings {
+                extendr_vctrs::helpers::vctr_show(&self.0)
+            }
+
+            fn subset(&self, idx: Integers) -> Self {
+                let new_inner = extendr_vctrs::helpers::vctr_subset(&self.0, idx);
+                Self(new_inner)
+            }
+
+            fn extend(self, y: Self) -> Self {
+                let inner = extendr_vctrs::helpers::vctr_extend(self.0, y.0);
+                Self(inner)
+            }
+
+            fn class() -> &'static str {
+                stringify!(#struct_name)
+            }
+        }
+
+        impl From<#struct_name> for Robj {
+            fn from(value: #struct_name) -> Self {
+                Vctr::from(value).as_vctr()
+            }
+        }
+
+        // Implement TryFrom for the struct
+        impl TryFrom<Robj> for #struct_name
+        where
+            #struct_name: Rvctr,
+        {
+            type Error = extendr_api::Error;
+
+            fn try_from(value: Robj) -> Result<Self> {
+                let inner = Integers::try_from(value)?;
+                let pntr = match inner.get_attrib("extendr_ptr") {
+                    Some(p) => p,
+                    None => return Err(Self::Error::ExpectedExternalPtr(().into())),
+                };
+
+                let extptr = ExternalPtr::<#struct_name>::try_from(pntr)?;
+                let dat = extptr.as_ref().clone();
+                Ok(dat)
             }
         }
     };
