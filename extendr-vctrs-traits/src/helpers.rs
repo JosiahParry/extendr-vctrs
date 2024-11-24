@@ -18,7 +18,7 @@ pub fn vctr_len<T: std::fmt::Debug, S: AsRef<[Option<T>]>>(x: S) -> Rint {
 }
 
 // extracts elements of a vector with copying unfortunately
-pub fn vctr_subset<T: Clone>(x: Vec<Option<T>>, idx: Integers) -> Vec<Option<T>> {
+pub fn vctr_subset<T: Clone>(x: &Vec<Option<T>>, idx: Integers) -> Vec<Option<T>> {
     let x_len = x.len();
 
     let res: Vec<_> = idx
