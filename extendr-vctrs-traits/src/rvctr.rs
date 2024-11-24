@@ -6,7 +6,9 @@ pub trait Rvctr
 where
     Self: Sized + std::fmt::Debug,
 {
-    fn class() -> &'static str;
+    fn class() -> &'static str {
+        "extendr_vctr"
+    }
     fn show(&self) -> Strings;
     fn length(&self) -> Rint;
     fn subset(self, idx: Integers) -> Self;
