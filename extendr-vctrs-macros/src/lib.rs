@@ -91,6 +91,13 @@ pub fn extendr_vctr(attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
             }
 
+            impl From<#struct_name> for Robj {
+                fn from(value: #struct_name) -> Self {
+                    Vctr::from(value).as_vctr()
+                }
+            }
+
+
             extendr_module! {
                 mod #module_name;
                 fn #show_fn_name;
