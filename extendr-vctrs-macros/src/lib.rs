@@ -71,31 +71,31 @@ pub fn extendr_vctr(attr: TokenStream, item: TokenStream) -> TokenStream {
                 Vctr::from(x.extend(y)).as_vctr()
             }
 
-            // Implement TryFrom for the struct
-            impl TryFrom<Robj> for #struct_name
-            where
-                #struct_name: Rvctr,
-            {
-                type Error = extendr_api::Error;
+            // // Implement TryFrom for the struct
+            // impl TryFrom<Robj> for #struct_name
+            // where
+            //     #struct_name: Rvctr,
+            // {
+            //     type Error = extendr_api::Error;
 
-                fn try_from(value: Robj) -> Result<Self> {
-                    let inner = Integers::try_from(value)?;
-                    let pntr = match inner.get_attrib("extendr_ptr") {
-                        Some(p) => p,
-                        None => return Err(Self::Error::ExpectedExternalPtr(().into())),
-                    };
+            //     fn try_from(value: Robj) -> Result<Self> {
+            //         let inner = Integers::try_from(value)?;
+            //         let pntr = match inner.get_attrib("extendr_ptr") {
+            //             Some(p) => p,
+            //             None => return Err(Self::Error::ExpectedExternalPtr(().into())),
+            //         };
 
-                    let extptr = ExternalPtr::<#struct_name>::try_from(pntr)?;
-                    let dat = extptr.as_ref().clone();
-                    Ok(dat)
-                }
-            }
+            //         let extptr = ExternalPtr::<#struct_name>::try_from(pntr)?;
+            //         let dat = extptr.as_ref().clone();
+            //         Ok(dat)
+            //     }
+            // }
 
-            impl From<#struct_name> for Robj {
-                fn from(value: #struct_name) -> Self {
-                    Vctr::from(value).as_vctr()
-                }
-            }
+            // impl From<#struct_name> for Robj {
+            //     fn from(value: #struct_name) -> Self {
+            //         Vctr::from(value).as_vctr()
+            //     }
+            // }
 
             extendr_module! {
                 mod #module_name;
